@@ -1,0 +1,13 @@
+spring:
+  application:
+    name: springBootSecurity
+  mvc:
+    problemdetails:
+      enabled: true
+
+logging:
+  level:
+    org.springframework.security: INFO
+
+server:
+  port: 8080
