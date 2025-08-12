@@ -86,28 +86,28 @@ public class SecurityConfig {
         return http.build();
     }
 
-    /* Cadena 2: Seguridad "web" para todo lo demás (stateful, FormLogin, CSRF ON) */
-    @Bean
-    @Order(2)
-    public SecurityFilterChain webFilterChain(HttpSecurity http) throws Exception {
-        http
-                .cors(Customizer.withDefaults())
-                .csrf(Customizer.withDefaults()) // navegadores: mantener CSRF
-                .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/", "/public/**", "/css/**", "/js/**", "/images/**").permitAll()
-                        .requestMatchers("/admin/**").hasRole("ADMIN")
-                        .anyRequest().authenticated()
-                )
-                .formLogin(form -> form
-                        .loginPage("/login").permitAll()
-                        .defaultSuccessUrl("/home", true)
-                )
-                .logout(logout -> logout
-                        .logoutRequestMatcher(new AntPathRequestMatcher("/logout"))
-                        .logoutSuccessUrl("/public/goodbye")
-                        .invalidateHttpSession(true)
-                        .clearAuthentication(true)
-                );
-        return http.build();
-    }
+//    /* Cadena 2: Seguridad "web" para todo lo demás (stateful, FormLogin, CSRF ON) */
+//    @Bean
+//    @Order(2)
+//    public SecurityFilterChain webFilterChain(HttpSecurity http) throws Exception {
+//        http
+//                .cors(Customizer.withDefaults())
+//                .csrf(Customizer.withDefaults()) // navegadores: mantener CSRF
+//                .authorizeHttpRequests(auth -> auth
+//                        .requestMatchers("/", "/public/**", "/css/**", "/js/**", "/images/**").permitAll()
+//                        .requestMatchers("/admin/**").hasRole("ADMIN")
+//                        .anyRequest().authenticated()
+//                )
+//                .formLogin(form -> form
+//                        .loginPage("/login").permitAll()
+//                        .defaultSuccessUrl("/home", true)
+//                )
+//                .logout(logout -> logout
+//                        .logoutRequestMatcher(new AntPathRequestMatcher("/logout"))
+//                        .logoutSuccessUrl("/public/goodbye")
+//                        .invalidateHttpSession(true)
+//                        .clearAuthentication(true)
+//                );
+//        return http.build();
+//    }
 }
