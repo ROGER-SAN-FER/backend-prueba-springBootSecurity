@@ -4,6 +4,17 @@ spring:
   mvc:
     problemdetails:
       enabled: true
+  datasource:
+    url: ${BD_URL}
+    username: ${BD_USERNAME}
+    password: ${BD_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+    jpa:
+      hibernate:
+        ddl-auto: update   # en prod: validate o flyway/liquibase
+      properties:
+        hibernate:
+          format_sql: true
 
 logging:
   level:
