@@ -9,12 +9,12 @@ spring:
     username: ${BD_USERNAME}
     password: ${BD_PASSWORD}
     driver-class-name: org.postgresql.Driver
-    jpa:
+  jpa:
+    hibernate:
+      ddl-auto: update   # en prod: validate o flyway/liquibase
+    properties:
       hibernate:
-        ddl-auto: update   # en prod: validate o flyway/liquibase
-      properties:
-        hibernate:
-          format_sql: true
+        format_sql: true
 
 logging:
   level:

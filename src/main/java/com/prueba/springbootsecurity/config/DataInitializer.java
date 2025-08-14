@@ -28,13 +28,13 @@ public class DataInitializer {
             var reportWrite = authRepo.findByName("REPORT_WRITE").orElseGet(() -> authRepo.save(new AuthoritiesEntity("REPORT_WRITE")));
 
             // Roles
-            var userRole = roleRepo.findByName("USER").orElseGet(() -> {
+            var userRole = roleRepo.findByRoleEnum(USER).orElseGet(() -> {
                 var newRol = new RoleEntity(USER);
                 newRol.setAuthoritiesList(Set.of(reportRead));
                 return roleRepo.save(newRol);
             });
 
-            var adminRole = roleRepo.findByName("ADMIN").orElseGet(() -> {
+            var adminRole = roleRepo.findByRoleEnum(ADMIN).orElseGet(() -> {
                 var newRol = new RoleEntity(ADMIN);
                 newRol.setAuthoritiesList(Set.of(reportRead, reportWrite));
                 return roleRepo.save(newRol);
@@ -42,12 +42,23 @@ public class DataInitializer {
 
             // Usuarios
             if (userRepo.findByUsername("user").isEmpty()) {
-                var newUser = new UserEntity ("user", encoder.encode("user123"));
+                var newUser = new UserEntity (
+                        "user",
+                        encoder.encode("user123")
+                );
+                newUser.setEnabled(true);
+                newUser.setAccountNonExpired(true);
+                newUser.setAccountNonLocked(true);
+                newUser.setCredentialsNonExpired(true);
                 newUser.setRolesList(Set.of(userRole));
                 userRepo.save(newUser);
             }
             if (userRepo.findByUsername("admin").isEmpty()) {
                 var newUser = new UserEntity("admin", encoder.encode("admin123"));
+                newUser.setEnabled(true);
+                newUser.setAccountNonExpired(true);
+                newUser.setAccountNonLocked(true);
+                newUser.setCredentialsNonExpired(true);
                 newUser.setRolesList(Set.of(adminRole));
                 userRepo.save(newUser);
             }

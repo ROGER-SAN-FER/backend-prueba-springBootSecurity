@@ -15,4 +15,9 @@ public class ReportService {
     public String generateUserReport() {
         return "Reporte de usuario generado para USER y ADMIN.";
     }
+
+    @PreAuthorize("hasAnyAuthority('REPORT_READ')")
+    public String generateUserReportRead() {
+        return "Reporte de usuario generado para USER y ADMIN.";
+    }
 }

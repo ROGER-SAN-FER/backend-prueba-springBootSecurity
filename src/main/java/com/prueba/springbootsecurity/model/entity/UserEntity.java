@@ -8,7 +8,6 @@ import java.util.Set;
 
 @Setter
 @Getter
-@Builder
 @RequiredArgsConstructor
 @NoArgsConstructor
 @Entity
@@ -38,7 +37,7 @@ public class UserEntity {
     @Column(name = "credentials_no_expired")
     private boolean credentialsNonExpired;
 
-    @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
             name = "user_roles",
             joinColumns = @JoinColumn(name = "user_id"),

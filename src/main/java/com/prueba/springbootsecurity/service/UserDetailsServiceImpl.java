@@ -22,9 +22,9 @@ public class UserDetailsServiceImpl implements UserDetailsService {
         var user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado: " + username));
 
-        var permissions = Stream.concat(
+        var authorities = Stream.concat(
                         user.getRolesList().stream().map(rol -> new SimpleGrantedAuthority("ROLE_" + rol.getRoleEnum())),
-                        user.getRolesList().stream().flatMap(rol -> rol.getPermissionsList().stream())
+                        user.getRolesList().stream().flatMap(rol -> rol.getAuthoritiesList().stream())
                                 .map(a -> new SimpleGrantedAuthority(a.getName()))
                 )
                 .distinct()
@@ -32,7 +32,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
 
         return User.withUsername(user.getUsername())
                 .password(user.getPassword())
-                .authorities(permissions)
+                .authorities(authorities)
                 .accountExpired(!user.isAccountNonExpired())
                 .accountLocked(!user.isAccountNonLocked())
                 .credentialsExpired(!user.isCredentialsNonExpired())

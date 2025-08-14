@@ -1,5 +1,6 @@
 package com.prueba.springbootsecurity.config;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
@@ -24,23 +25,10 @@ import java.util.List;
 
 @Configuration
 @EnableMethodSecurity // habilita @PreAuthorize, @PostAuthorize, etc.
+@RequiredArgsConstructor
 public class SecurityConfig {
 
-    /* Usuarios en memoria para demo */
-    @Bean
-    public UserDetailsService userDetailsService(PasswordEncoder encoder) {
-        UserDetails user = User.withUsername("user")
-                .password(encoder.encode("user123"))
-                .roles("USER")
-                .build();
-
-        UserDetails admin = User.withUsername("admin")
-                .password(encoder.encode("admin123"))
-                .roles("ADMIN")
-                .build();
-
-        return new InMemoryUserDetailsManager(user, admin);
-    }
+    private final UserDetailsService userDetailsService;
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -79,10 +67,12 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/public/**").permitAll()
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         .requestMatchers("/api/user/**").hasAnyRole("USER", "ADMIN")
+                        .requestMatchers(HttpMethod.DELETE,"/api/*").hasRole("ADMIN")
                         .requestMatchers("/api/reports/sensitive").hasRole("ADMIN")
                         .requestMatchers("/api/reports/user").hasAnyRole("USER","ADMIN")
                         .anyRequest().authenticated()
                 )
+                .userDetailsService(userDetailsService)
                 .httpBasic(Customizer.withDefaults()) // luego migraremos a Bearer JWT
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
         return http.build();

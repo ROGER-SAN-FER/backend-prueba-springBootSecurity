@@ -8,7 +8,6 @@ import java.util.Set;
 
 @Setter
 @Getter
-@Builder
 @NoArgsConstructor
 @RequiredArgsConstructor
 @Entity
@@ -24,7 +23,7 @@ public class RoleEntity {
     @Column(name = "role_name", unique = true, nullable = false, length = 64)
     private RoleEnum roleEnum;
 
-    @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
             name = "role_permissions",
             joinColumns = @JoinColumn(name = "role_id"),
