@@ -20,4 +20,7 @@ public class ReportController {
     public String userReport() {
         return service.generateUserReport();
     }
+
+    @GetMapping("/user/ultraSensible")
+    public String ultraSensibleReport() { return service.generateUserReportRead(); }
 }

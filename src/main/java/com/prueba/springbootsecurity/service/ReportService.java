@@ -16,7 +16,9 @@ public class ReportService {
         return "Reporte de usuario generado para USER y ADMIN.";
     }
 
-    @PreAuthorize("hasAnyAuthority('REPORT_READ')")
+    //Aunque USER y ADMIN tiene permisos de rol por SecurityFilterChain, a nivel de profundidad solo puede
+    //acceder el que tiene el permiso authority
+    @PreAuthorize("hasAnyAuthority('REPORT_WRITE')")
     public String generateUserReportRead() {
         return "Reporte de usuario generado para USER y ADMIN.";
     }

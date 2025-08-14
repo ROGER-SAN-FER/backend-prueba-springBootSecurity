@@ -9,14 +9,10 @@ import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -66,10 +62,10 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.GET, "/api/public/**").permitAll()
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
-                        .requestMatchers("/api/user/**").hasAnyRole("USER", "ADMIN")
-                        .requestMatchers(HttpMethod.DELETE,"/api/*").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/api/*").hasRole("ADMIN")
                         .requestMatchers("/api/reports/sensitive").hasRole("ADMIN")
-                        .requestMatchers("/api/reports/user").hasAnyRole("USER","ADMIN")
+                        .requestMatchers("/api/reports/user").hasAnyRole("USER", "ADMIN")
+                        .requestMatchers("/api/reports/user/ultraSensible").hasAnyRole("USER", "ADMIN")
                         .anyRequest().authenticated()
                 )
                 .userDetailsService(userDetailsService)
