@@ -1,11 +1,14 @@
-package com.prueba.springbootsecurity.config;
+package com.prueba.springbootsecurity.security.config;
 
+import com.prueba.springbootsecurity.security.auth.JwtAuthenticationFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpMethod;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.Customizer;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -13,6 +16,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -24,12 +28,16 @@ import java.util.List;
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-    private final UserDetailsService userDetailsService;
+    private final JwtAuthenticationFilter jwtFilter;
 
     @Bean
     public PasswordEncoder passwordEncoder() {
-        // 🛡️ OWASP Mitigación: A02 Cryptographic Failures → hash seguro con BCrypt
-        return new BCryptPasswordEncoder();
+        return new BCryptPasswordEncoder(); // 🛡️ A02
+    }
+
+    @Bean
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration cfg) throws Exception {
+        return cfg.getAuthenticationManager(); // usa tu JpaUserDetailsService + BCrypt
     }
 
     /* CORS global (ajusta orígenes según tu frontend) */
@@ -58,8 +66,10 @@ public class SecurityConfig {
                 .securityMatcher("/api/**")
                 .cors(Customizer.withDefaults())
                 .csrf(csrf -> csrf.disable()) // APIs stateless: sin CSRF
+                .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 // 🛡️ OWASP Mitigación: A01 Broken Access Control → reglas claras de autorización
                 .authorizeHttpRequests(auth -> auth
+                        .requestMatchers(HttpMethod.POST, "/api/auth/login", "/api/auth/refresh").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/public/**").permitAll()
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/api/*").hasRole("ADMIN")
@@ -68,9 +78,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/reports/user/ultraSensible").hasAnyRole("USER", "ADMIN")
                         .anyRequest().authenticated()
                 )
-                .userDetailsService(userDetailsService)
-                .httpBasic(Customizer.withDefaults()) // luego migraremos a Bearer JWT
-                .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
 }
