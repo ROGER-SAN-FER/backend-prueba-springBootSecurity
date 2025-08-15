@@ -17,6 +17,11 @@ public class ApiController {
         return "pong público (API)";
     }
 
+    @CrossOrigin(
+            origins = {"http://localhost:3000"},
+            methods = {RequestMethod.GET, RequestMethod.POST},
+            allowedHeaders = {"Authorization","Content-Type"}
+    )
     @GetMapping("/user/me")
     public String userMe(Authentication auth) {
         return "Hola, " + auth.getName() + " con roles " + auth.getAuthorities();

@@ -44,14 +44,25 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration cfg = new CorsConfiguration();
+
+        // Lista explícita de frontends permitidos
         cfg.setAllowedOrigins(List.of(
                 "http://localhost:5173",
                 "http://localhost:4200",
                 "http://localhost:3000"
         ));
+
+        // Métodos que realmente usas
         cfg.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
-        cfg.setAllowedHeaders(List.of("*"));
-        cfg.setAllowCredentials(true);
+
+        // Headers que tu frontend envía (incluye Authorization para Bearer)
+        cfg.setAllowedHeaders(List.of("Authorization","Content-Type","Accept","X-Requested-With"));
+
+        // Si vas a usar cookies/credenciales cross-site (no es tu caso con Bearer, normalmente false)
+        cfg.setAllowCredentials(false);
+
+        // Cachea la preflight en el navegador
+        cfg.setMaxAge(3600L);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", cfg);
