@@ -1,9 +1,13 @@
 package com.prueba.springbootsecurity.security.auth;
 
 import io.jsonwebtoken.*;
-import io.jsonwebtoken.security.Keys;
+import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import java.security.Key;
+
+import java.security.PrivateKey;
+import java.security.PublicKey;
+import java.time.Instant;
 import java.util.Date;
 import java.util.Map;
 import java.util.function.Function;
@@ -11,31 +15,56 @@ import java.util.function.Function;
 @Service
 public class JwtService {
 
-    private final Key key = Keys.hmacShaKeyFor("mi_clave_secreta_super_segura_de_32_bytes!".getBytes());
-    private final long accessTokenExpirationMs = 1000 * 60 * 15; // 15 min
-    private final long refreshTokenExpirationMs = 1000 * 60 * 60 * 24; // 24 horas
+    private final PublicKey publicKey;
+    private final PrivateKey privateKey;
+    private final String issuer;
+    private final long accessSeconds;
+    private final long refreshSeconds;
+
+    public JwtService(
+            PublicKey jwtPublicKey,
+            PrivateKey jwtPrivateKey,
+            @Value("${security.jwt.issuer}") String issuer,
+            @Value("${security.jwt.access.minutes}") long accessMinutes,
+            @Value("${security.jwt.refresh.days}") long refreshDays
+    ) {
+        this.publicKey = jwtPublicKey;
+        this.privateKey = jwtPrivateKey;
+        this.issuer = issuer;
+        this.accessSeconds = accessMinutes * 60;
+        this.refreshSeconds = refreshDays * 24 * 3600;
+    }
 
     public String generateAccessToken(String username, Map<String, Object> extraClaims) {
+        Instant now = Instant.now();
         return Jwts.builder()
-                .setClaims(extraClaims)
+                .addClaims(extraClaims == null ? Map.of() : extraClaims)
+                .setIssuer(issuer)
                 .setSubject(username)
-                .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + accessTokenExpirationMs))
-                .signWith(key, SignatureAlgorithm.HS256)
+                .setIssuedAt(Date.from(now))
+                .setExpiration(Date.from(now.plusSeconds(accessSeconds)))
+                .signWith(privateKey, SignatureAlgorithm.RS256)
                 .compact();
     }
 
     public String generateRefreshToken(String username) {
+        Instant now = Instant.now();
         return Jwts.builder()
+                .setIssuer(issuer)
                 .setSubject(username)
-                .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + refreshTokenExpirationMs))
-                .signWith(key, SignatureAlgorithm.HS256)
+                .setIssuedAt(Date.from(now))
+                .setExpiration(Date.from(now.plusSeconds(refreshSeconds)))
+                .signWith(privateKey, SignatureAlgorithm.RS256)
                 .compact();
     }
 
     public boolean isTokenValid(String token, String username) {
-        return extractUsername(token).equals(username) && !isTokenExpired(token);
+        try {
+            String sub = extractUsername(token);
+            return username.equals(sub) && !isTokenExpired(token);
+        } catch (JwtException | IllegalArgumentException e) {
+            return false;
+        }
     }
 
     public String extractUsername(String token) {
@@ -48,7 +77,7 @@ public class JwtService {
 
     public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
         Claims claims = Jwts.parserBuilder()
-                .setSigningKey(key)
+                .setSigningKey(publicKey) // usar verifyWith(...) si es jjwt 0.12+
                 .build()
                 .parseClaimsJws(token)
                 .getBody();
@@ -59,3 +88,4 @@ public class JwtService {
         return extractExpiration(token).before(new Date());
     }
 }
+

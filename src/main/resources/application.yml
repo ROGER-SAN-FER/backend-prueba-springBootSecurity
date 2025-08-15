@@ -16,6 +16,17 @@ spring:
       hibernate:
         format_sql: true
 
+security:
+  jwt:
+    issuer: "springbootsecurity"
+    access:
+      minutes: 15
+    refresh:
+      days: 7
+    rsa:
+      public-key: file:${PUBLIC_KEY}
+      private-key: file:${SECRET_KEY}
+
 logging:
   level:
     org.springframework.security: INFO
