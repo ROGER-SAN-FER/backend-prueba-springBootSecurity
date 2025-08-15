@@ -2,6 +2,7 @@ package com.prueba.springbootsecurity.security.auth;
 
 import com.prueba.springbootsecurity.model.dto.AuthRequest;
 import com.prueba.springbootsecurity.model.dto.AuthResponse;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.*;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -12,19 +13,12 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/auth")
+@RequiredArgsConstructor
 public class AuthController {
 
     private final AuthenticationManager authManager;
     private final UserDetailsService userDetailsService;
     private final JwtService jwt;
-
-    public AuthController(AuthenticationManager authManager,
-                          UserDetailsService userDetailsService,
-                          JwtService jwt) {
-        this.authManager = authManager;
-        this.userDetailsService = userDetailsService;
-        this.jwt = jwt;
-    }
 
     @PostMapping("/login")
     public ResponseEntity<AuthResponse> login(@RequestBody AuthRequest req) {
