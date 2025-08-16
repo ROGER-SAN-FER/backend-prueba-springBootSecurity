@@ -12,6 +12,11 @@ public class ApiController {
 
     public final UserService userService;
 
+    @GetMapping("/secure")
+    String secure(Authentication auth){
+        return "Hello API, user=" + auth.getName();
+    }
+
     @GetMapping("/public/ping")
     public String publicPing() {
         return "pong público (API)";

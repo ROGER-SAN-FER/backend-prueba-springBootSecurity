@@ -16,6 +16,32 @@ spring:
       hibernate:
         format_sql: true
 
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: ${GOOGLE_CLIENT_ID}
+            client-secret: ${GOOGLE_CLIENT_SECRET}
+            scope: openid,profile,email
+            redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
+          facebook:
+            client-id: ${FACEBOOK_CLIENT_ID}
+            client-secret: ${FACEBOOK_CLIENT_SECRET}
+            scope: public_profile,email
+            redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
+            client-name: Facebook
+#      provider:
+        # Google usa el default de Spring (no hace falta proveedor custom)
+        # Facebook: Spring trae defaults razonables, no suele hacer falta tocar.
+#      resourceserver:
+#        jwt:
+        # Si además validas *tu* JWT RS256 en /api/**, mantén tu verificación como ya la tienes.
+        # Si usas tu JwtService con RSA, no pongas issuer-uri aquí (ya lo gestionas tú).
+        # Deja esta sección si también aceptas Bearer externos; si no, puedes omitirla.
+        # issuer-uri: (OPCIONAL si validas tokens externos)
+        # jwk-set-uri: (OPCIONAL)
+
 security:
   jwt:
     issuer: "springbootsecurity"

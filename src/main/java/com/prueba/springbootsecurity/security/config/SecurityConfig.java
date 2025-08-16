@@ -1,6 +1,9 @@
 package com.prueba.springbootsecurity.security.config;
 
 import com.prueba.springbootsecurity.security.auth.JwtAuthenticationFilter;
+import com.prueba.springbootsecurity.security.auth.JwtService;
+import com.prueba.springbootsecurity.security.oauth2.OAuth2AuthenticationSuccessHandler;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -16,12 +19,15 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 
 @Configuration
 @EnableMethodSecurity // habilita @PreAuthorize, @PostAuthorize, etc.
@@ -29,6 +35,7 @@ import java.util.List;
 public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtFilter;
+    private final OAuth2AuthenticationSuccessHandler successHandler;
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -69,27 +76,44 @@ public class SecurityConfig {
         return source;
     }
 
-    /* Cadena 1: Seguridad para /api/** (stateless, Basic, sin CSRF) */
+    // Cadena 1: API (stateless + Bearer con tu JWT)
     @Bean
     @Order(1)
     public SecurityFilterChain apiFilterChain(HttpSecurity http) throws Exception {
         http
                 .securityMatcher("/api/**")
                 .cors(Customizer.withDefaults())
-                .csrf(csrf -> csrf.disable()) // APIs stateless: sin CSRF
+                .csrf(csrf -> csrf.disable())
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                // 🛡️ OWASP Mitigación: A01 Broken Access Control → reglas claras de autorización
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.POST, "/api/auth/login", "/api/auth/refresh").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/public/**").permitAll()
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/api/*").hasRole("ADMIN")
                         .requestMatchers("/api/reports/sensitive").hasRole("ADMIN")
-                        .requestMatchers("/api/reports/user").hasAnyRole("USER", "ADMIN")
-                        .requestMatchers("/api/reports/user/ultraSensible").hasAnyRole("USER", "ADMIN")
+                        .requestMatchers("/api/reports/user").hasAnyRole("USER","ADMIN")
+                        .requestMatchers("/api/reports/user/ultraSensible").hasAnyRole("USER","ADMIN")
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
+
+    // Cadena 2: Web (OAuth2 login: Google/Facebook)
+    @Bean
+    @Order(2)
+    SecurityFilterChain webFilterChain(HttpSecurity http) throws Exception {
+        http
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/public/**", "/oauth2/**", "/login/**").permitAll()
+                        .requestMatchers("/me").authenticated()
+                        .anyRequest().permitAll()
+                )
+                .oauth2Login(oauth -> oauth.successHandler(successHandler))
+                .csrf(csrf -> csrf.disable())
+                .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED));
+        // OJO: NO añadir jwtFilter aquí
+        return http.build();
+    }
+
 }
