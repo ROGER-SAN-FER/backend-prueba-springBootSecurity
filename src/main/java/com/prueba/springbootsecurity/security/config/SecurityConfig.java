@@ -37,10 +37,6 @@ public class SecurityConfig {
     private final JwtAuthenticationFilter jwtFilter;
     private final OAuth2AuthenticationSuccessHandler successHandler;
 
-    @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder(); // 🛡️ A02
-    }
 
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration cfg) throws Exception {

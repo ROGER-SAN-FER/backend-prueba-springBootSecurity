@@ -1,64 +1,84 @@
 package com.prueba.springbootsecurity.security.oauth2;
 
+import com.prueba.springbootsecurity.model.entity.UserEntity;
 import com.prueba.springbootsecurity.security.auth.JwtService;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.*;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.security.oauth2.core.user.OAuth2User;
-import org.springframework.stereotype.Component;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
+import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor
 public class OAuth2AuthenticationSuccessHandler implements AuthenticationSuccessHandler {
 
-    private final JwtService jwtService;
+    private final SocialProvisioningService provisioning;
+    private final JwtService jwt;
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
-                                        Authentication authentication) throws IOException, ServletException {
+                                        Authentication authentication) throws IOException {
 
         var token = (OAuth2AuthenticationToken) authentication;
         var principal = token.getPrincipal();
-
-        // Normalizamos identidad
         String provider = token.getAuthorizedClientRegistrationId(); // "google" | "facebook"
-        String username;
-        String email = null;
-        Map<String,Object> claims = new HashMap<>();
-        claims.put("provider", provider);
 
-        if (principal instanceof OidcUser oidc) {              // Google (OIDC)
-            username = oidc.getSubject();                        // sub
+        String providerUserId;
+        String email = null;
+        String name = null;
+
+        if (principal instanceof OidcUser oidc) {           // Google (OIDC)
+            providerUserId = oidc.getSubject();
             email = oidc.getEmail();
-            claims.put("name", oidc.getFullName());
-            claims.put("email", email);
-        } else {                                               // Facebook (OAuth2)
-            OAuth2User ou = (OAuth2User) principal;
-            // Facebook puede no devolver email si el usuario no lo permite
-            email = (String) ou.getAttributes().get("email");
-            username = email != null ? email : (String) ou.getAttributes().get("id");
-            claims.putAll(ou.getAttributes());
+            name = oidc.getFullName();
+        } else {                                            // Facebook (OAuth2)
+            var attrs = ((OAuth2User) principal).getAttributes();
+            providerUserId = String.valueOf(attrs.get("id"));
+            email = (String) attrs.get("email");            // puede venir null si no se consintió
+            name = (String) attrs.getOrDefault("name", email != null ? email : providerUserId);
         }
 
-        // Authorities del login social (normalmente ROLE_USER)
-        var authorities = principal.getAuthorities().stream().map(a -> a.getAuthority()).toList();
-        claims.put("roles", authorities);
+        // 1) JIT provisioning en tu Postgres
+        UserEntity user = provisioning.provisionOrUpdate(provider, providerUserId, email, name);
 
-        // Emitimos *tu* JWT de acceso y refresh
-        String access = jwtService.generateAccessToken(username, claims);
-        String refresh = jwtService.generateRefreshToken(username);
+        // 2) Construir authorities desde TU BD (roles + permisos)
+        var authorities = new HashSet<String>();
+        // Roles como ROLE_X
+        authorities.addAll(
+                user.getRolesList().stream()
+                        .map(r -> "ROLE_" + r.getRoleEnum()) // ajusta si guardas el nombre de rol de otro modo
+                        .collect(Collectors.toSet())
+        );
+        // Permisos/authorities como nombres planos (p.ej. REPORT_READ)
+        user.getRolesList().stream()
+                .flatMap(r -> r.getAuthoritiesList().stream())
+                .map(a -> a.getName())
+                .forEach(authorities::add);
 
-        // Devolvemos JSON directo (alternativa: redirigir a tu frontend con tokens en fragment/hash)
+        // 3) Claims para tu JWT
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("provider", provider);
+        claims.put("uid", user.getId());
+        claims.put("roles", new ArrayList<>(authorities));
+        if (email != null) claims.put("email", email);
+        if (name != null)  claims.put("name", name);
+
+        // 4) Emitir tus tokens
+        String access  = jwt.generateAccessToken(user.getUsername(), claims);
+        String refresh = jwt.generateRefreshToken(user.getUsername());
+
+        // 5) Responder JSON
         response.setContentType("application/json");
         response.getWriter().write("""
-        { "accessToken": "%s", "refreshToken": "%s" }
+            {"accessToken":"%s","refreshToken":"%s"}
         """.formatted(access, refresh));
     }
 }
