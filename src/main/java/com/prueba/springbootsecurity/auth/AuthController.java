@@ -1,4 +1,4 @@
-package com.prueba.springbootsecurity.security.auth;
+package com.prueba.springbootsecurity.auth;
 
 import com.prueba.springbootsecurity.model.dto.AuthRequest;
 import com.prueba.springbootsecurity.model.dto.AuthResponse;

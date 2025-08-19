@@ -1,4 +1,4 @@
-package com.prueba.springbootsecurity.security.auth;
+package com.prueba.springbootsecurity.auth;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;

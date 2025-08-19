@@ -1,7 +1,7 @@
-package com.prueba.springbootsecurity.security.oauth2;
+package com.prueba.springbootsecurity.oauth2;
 
 import com.prueba.springbootsecurity.model.entity.UserEntity;
-import com.prueba.springbootsecurity.security.auth.JwtService;
+import com.prueba.springbootsecurity.auth.JwtService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;

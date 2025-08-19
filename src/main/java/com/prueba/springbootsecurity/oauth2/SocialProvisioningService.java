@@ -1,4 +1,4 @@
-package com.prueba.springbootsecurity.security.oauth2;
+package com.prueba.springbootsecurity.oauth2;
 
 import com.prueba.springbootsecurity.model.entity.RoleEntity;
 import com.prueba.springbootsecurity.model.entity.RoleEnum;

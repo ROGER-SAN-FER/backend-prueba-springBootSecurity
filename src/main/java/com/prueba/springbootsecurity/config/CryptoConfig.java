@@ -1,4 +1,4 @@
-package com.prueba.springbootsecurity.security.config;
+package com.prueba.springbootsecurity.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

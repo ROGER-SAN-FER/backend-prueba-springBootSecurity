@@ -1,4 +1,4 @@
-package com.prueba.springbootsecurity.security.auth;
+package com.prueba.springbootsecurity.auth;
 
 import io.jsonwebtoken.*;
 import lombok.RequiredArgsConstructor;
