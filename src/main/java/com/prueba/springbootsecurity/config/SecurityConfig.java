@@ -1,9 +1,9 @@
 package com.prueba.springbootsecurity.config;
 
-import com.prueba.springbootsecurity.audit.AuditAccessDeniedHandler;
-import com.prueba.springbootsecurity.audit.AuditAuthenticationEntryPoint;
-import com.prueba.springbootsecurity.auth.JwtAuthenticationFilter;
-import com.prueba.springbootsecurity.oauth2.OAuth2AuthenticationSuccessHandler;
+import com.prueba.springbootsecurity.features.audit.handler.AuditAccessDeniedHandler;
+import com.prueba.springbootsecurity.features.audit.handler.AuditAuthenticationEntryPoint;
+import com.prueba.springbootsecurity.features.auth.filter.JwtAuthenticationFilter;
+import com.prueba.springbootsecurity.features.oauth2.handler.OAuth2AuthenticationSuccessHandler;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

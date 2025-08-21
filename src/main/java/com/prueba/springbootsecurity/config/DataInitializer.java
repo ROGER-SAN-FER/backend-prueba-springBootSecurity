@@ -1,19 +1,19 @@
 package com.prueba.springbootsecurity.config;
 
-import com.prueba.springbootsecurity.model.entity.AuthoritiesEntity;
-import com.prueba.springbootsecurity.model.entity.RoleEntity;
-import com.prueba.springbootsecurity.model.entity.UserEntity;
-import com.prueba.springbootsecurity.repository.AuthoritiesRepository;
-import com.prueba.springbootsecurity.repository.RoleRepository;
-import com.prueba.springbootsecurity.repository.UserRepository;
+import com.prueba.springbootsecurity.features.identity.domain.AuthoritiesEntity;
+import com.prueba.springbootsecurity.features.identity.domain.RoleEntity;
+import com.prueba.springbootsecurity.features.identity.domain.UserEntity;
+import com.prueba.springbootsecurity.features.identity.repository.AuthoritiesRepository;
+import com.prueba.springbootsecurity.features.identity.repository.RoleRepository;
+import com.prueba.springbootsecurity.features.identity.repository.UserRepository;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import java.util.Set;
-import static com.prueba.springbootsecurity.model.entity.RoleEnum.ADMIN;
-import static com.prueba.springbootsecurity.model.entity.RoleEnum.USER;
+import static com.prueba.springbootsecurity.features.identity.domain.RoleEnum.ADMIN;
+import static com.prueba.springbootsecurity.features.identity.domain.RoleEnum.USER;
 
 @Configuration
 @Profile("!test")

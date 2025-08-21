@@ -1,6 +1,6 @@
 package com.prueba.springbootsecurity;
 
-import com.prueba.springbootsecurity.service.JwtService;
+import com.prueba.springbootsecurity.features.auth.service.JwtService;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
