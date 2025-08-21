@@ -1,5 +1,7 @@
 package com.prueba.springbootsecurity.config;
 
+import com.prueba.springbootsecurity.audit.AuditAccessDeniedHandler;
+import com.prueba.springbootsecurity.audit.AuditAuthenticationEntryPoint;
 import com.prueba.springbootsecurity.auth.JwtAuthenticationFilter;
 import com.prueba.springbootsecurity.oauth2.OAuth2AuthenticationSuccessHandler;
 import lombok.RequiredArgsConstructor;
@@ -28,6 +30,9 @@ public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtFilter;
     private final OAuth2AuthenticationSuccessHandler successHandler;
+    // inyecta:
+    private final AuditAccessDeniedHandler auditDeniedHandler;
+    private final AuditAuthenticationEntryPoint auditEntryPoint;
 
 
     @Bean
@@ -73,8 +78,13 @@ public class SecurityConfig {
                 .cors(Customizer.withDefaults())
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .exceptionHandling(e -> e
+                        .authenticationEntryPoint(auditEntryPoint)     // 401 con auditoría
+                        .accessDeniedHandler(auditDeniedHandler)       // 403 con auditoría
+                )
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.POST, "/api/auth/login", "/api/auth/refresh").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/auth/logout").permitAll() // o .authenticated()
                         .requestMatchers(HttpMethod.GET, "/api/public/**").permitAll()
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/api/*").hasRole("ADMIN")

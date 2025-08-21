@@ -37,6 +37,14 @@ public class UserEntity {
     @Column(name = "credentials_no_expired")
     private boolean credentialsNonExpired;
 
+    // Para audit
+    @Column(name = "failed_attempts", /*columnDefinition = "integer default 0"*/nullable = false)
+    private int failedAttempts = 0;
+
+    // Para audit
+    @Column(name = "lock_until") // null si no está bloqueado
+    private java.time.Instant lockUntil;
+
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
             name = "user_roles",
