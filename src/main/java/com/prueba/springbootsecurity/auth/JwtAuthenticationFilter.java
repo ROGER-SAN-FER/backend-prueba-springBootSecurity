@@ -1,5 +1,6 @@
 package com.prueba.springbootsecurity.auth;
 
+import com.prueba.springbootsecurity.service.JwtService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
